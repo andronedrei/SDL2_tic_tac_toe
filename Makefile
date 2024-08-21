@@ -1,4 +1,4 @@
-SOURCES = main.cpp utils.cpp game_interface.cpp
+SOURCES = main.cpp utils.cpp game_interface.cpp game_logic.cpp
 OUTPUT = tic_tac_toe
 
 CXX = g++

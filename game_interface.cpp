@@ -37,7 +37,7 @@ void GameGrid::find_grid_dim() {
     grid_dim.y = std::max((get_vertical_fit_ratio(viewport.h) - grid_dim.h) / 2, 0);
 }
 
-void GameGrid::draw_X(int row, int column) {
+void GameGrid::draw_symbol(int row, int column, symbol symbol_used) {
     SDL_Rect cell_dim;
 
     cell_dim.x = grid_dim.x + column * cell_size;
@@ -45,40 +45,56 @@ void GameGrid::draw_X(int row, int column) {
     cell_dim.w = cell_size;
     cell_dim.h = cell_size;
 
-    SDL_SetRenderDrawColor(renderer_used, 
-        color_X.r, color_X.g, color_X.b, color_X.a
-    );
-    RenderX(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
+    switch (symbol_used) {
+        case SYMBOL_X:
+            SDL_SetRenderDrawColor(renderer_used, 
+                color_X.r, color_X.g, color_X.b, color_X.a
+            );
+            RenderX(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
+            break;
+        case SYMBOL_0:
+            SDL_SetRenderDrawColor(renderer_used, 
+                color_0.r, color_0.g, color_0.b, color_0.a
+            );
+            Render0(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
+            break;
+        default: break;
+    }
 }
 
-void GameGrid::draw_0(int row, int column) {
-    SDL_Rect cell_dim;
-
-    cell_dim.x = grid_dim.x + column * cell_size;
-    cell_dim.y = grid_dim.y + row * cell_size;
-    cell_dim.w = cell_size;
-    cell_dim.h = cell_size;
-
-    SDL_SetRenderDrawColor(renderer_used, 
-        color_0.r, color_0.g, color_0.b, color_0.a
+void GameGrid::draw_Cross() {
+    SDL_SetRenderDrawColor(renderer_used,
+        color_cross.r, color_cross.g, color_cross.b, color_cross.a
     );
-    Render0(renderer_used, cell_dim, thickness * 2);
+    RenderThickLine(renderer_used, start_cross, stop_cross, thickness);
 }
 
 void GameGrid::clear_grid_data() {
     for (int i = 0; i < grid_nr_rows; i++) {
         for (int j = 0; j < grid_nr_columns; j++) {
-            grid_data[i][j] = cell_empty;
+            grid_data[i][j] = CELL_EMPTY;
         }
     }
+
+    game_won = false;
 }
 
 void GameGrid::set_X(int row, int column) {
-    grid_data[row][column] = cell_X;
+    grid_data[row][column] = CELL_X;
 }
 
 void GameGrid::set_0(int row, int column) {
-    grid_data[row][column] = cell_0;
+    grid_data[row][column] = CELL_0;
+}
+
+void GameGrid::set_winner(int start_row, int start_column, int stop_row, int stop_column) {
+    start_cross.x = grid_dim.x + start_column * cell_size + cell_size / 2;
+    start_cross.y = grid_dim.y + start_row * cell_size + cell_size / 2;
+
+    stop_cross.x = grid_dim.x + stop_column * cell_size + cell_size / 2;
+    stop_cross.y = grid_dim.y + stop_row* cell_size + cell_size / 2;
+
+    game_won = true;
 }
 
 // function to check whether mouse hovers over a valid cell (saves row and column)
@@ -95,18 +111,13 @@ bool GameGrid::check_mouse_cell(SDL_Point mouse_poz, int& row, int& column) {
     column = (mouse_poz.x - grid_dim.x) / cell_size;
     row = (mouse_poz.y - grid_dim.y) / cell_size;
 
-    return grid_data[row][column] == cell_empty ? true : false;
+    return grid_data[row][column] == CELL_EMPTY ? true : false;
 }
 
 GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
-    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_cross) {
-    renderer_used = renderer;
-    grid_nr_columns = grd_nr_cols;
-    grid_nr_rows = grd_nr_rows;
-    color_grid = col_grid;
-    color_X = col_X;
-    color_0 = col_0;
-    color_cross = col_cross;
+    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_cross)
+    : renderer_used(renderer), grid_nr_columns(grd_nr_cols), grid_nr_rows(grd_nr_rows),
+    color_grid(col_grid), color_X(col_X), color_0(col_0), color_cross(col_cross) {
 
     // resize matrix with data
     grid_data.resize(grid_nr_rows);
@@ -114,9 +125,12 @@ GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows,
         grid_data[i].resize(grid_nr_columns);
     }
 
+    // prepare state of game
     clear_grid_data();
     find_grid_dim();
 }
+
+GameGrid::~GameGrid() {};
 
 void GameGrid::draw_grid() {
     SDL_SetRenderDrawColor(renderer_used, 
@@ -146,12 +160,16 @@ void GameGrid::draw_grid() {
     // draw "X" and "0" symbols
     for (int i = 0; i < grid_nr_rows; i++) {
         for (int j = 0; j < grid_nr_columns; j++) {
-            if (grid_data[i][j] == cell_X) {
-                draw_X(i, j);
-            }
-            if (grid_data[i][j] == cell_0) {
-                draw_0(i, j);
+            switch(grid_data[i][j]) {
+                case CELL_X: draw_symbol(i, j, SYMBOL_X); break;
+                case CELL_0: draw_symbol(i, j, SYMBOL_0); break;
+                default: break;
             }
         }
+    }
+
+    // draw cross line for winner if case
+    if (game_won == true) {
+        draw_Cross();
     }
 }

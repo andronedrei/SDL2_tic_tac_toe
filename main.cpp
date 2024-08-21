@@ -3,6 +3,7 @@
 
 #include "custom/utils.h"
 #include "custom/game_interface.h"
+#include "custom/game_logic.h"
 
 void exit_game(SDL_Window* window, SDL_Renderer* renderer) {
     SDL_DestroyRenderer(renderer);    
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    GameGrid game_table(renderer, 30, 3, 
+    GameGrid game_table(renderer, 3, 3, 
         {255, 255, 255, SDL_ALPHA_OPAQUE}, // grid color - white
         {255, 0, 0, SDL_ALPHA_OPAQUE}, // X color - red
         {0, 0, 255, SDL_ALPHA_OPAQUE}, // 0 color - blue
@@ -41,8 +42,10 @@ int main(int argc, char* argv[]) {
     );
 
     ////
-    game_table.set_0(1, 1);
-    game_table.set_X(1, 2);
+    game_table.set_0(0, 0);
+    game_table.set_0(0, 1);
+    game_table.set_0(0, 2);
+    game_table.set_winner(0, 0, 0, 2);
     ////
     int mouseX;
     int mouseY;

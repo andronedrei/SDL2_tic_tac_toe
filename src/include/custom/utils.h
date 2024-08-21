@@ -3,11 +3,20 @@
 
 #include <SDL2/SDL.h>
 
+enum player_type {
+    HUMAN,
+    ROBOT
+};
+
+enum symbol {
+    SYMBOL_X,
+    SYMBOL_0
+};
 
 enum cell_state {
-    cell_empty,
-    cell_X,
-    cell_0
+    CELL_EMPTY,
+    CELL_X,
+    CELL_0
 };
 
 long PointsDist(SDL_Point p1, SDL_Point p2);
