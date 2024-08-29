@@ -8,15 +8,17 @@ enum player_type {
     ROBOT
 };
 
-enum symbol {
-    SYMBOL_X,
-    SYMBOL_0
+enum cell_state {
+    CELL_X,
+    CELL_0,
+    CELL_EMPTY
 };
 
-enum cell_state {
-    CELL_EMPTY,
-    CELL_X,
-    CELL_0
+struct grid_line_data {
+    int start_row;
+    int start_column;
+    int stop_row;
+    int stop_column;
 };
 
 long PointsDist(SDL_Point p1, SDL_Point p2);

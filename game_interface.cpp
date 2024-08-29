@@ -37,7 +37,7 @@ void GameGrid::find_grid_dim() {
     grid_dim.y = std::max((get_vertical_fit_ratio(viewport.h) - grid_dim.h) / 2, 0);
 }
 
-void GameGrid::draw_symbol(int row, int column, symbol symbol_used) {
+void GameGrid::draw_cell(int row, int column, cell_state symbol_used) {
     SDL_Rect cell_dim;
 
     cell_dim.x = grid_dim.x + column * cell_size;
@@ -46,13 +46,13 @@ void GameGrid::draw_symbol(int row, int column, symbol symbol_used) {
     cell_dim.h = cell_size;
 
     switch (symbol_used) {
-        case SYMBOL_X:
+        case CELL_X:
             SDL_SetRenderDrawColor(renderer_used, 
                 color_X.r, color_X.g, color_X.b, color_X.a
             );
             RenderX(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
             break;
-        case SYMBOL_0:
+        case CELL_0:
             SDL_SetRenderDrawColor(renderer_used, 
                 color_0.r, color_0.g, color_0.b, color_0.a
             );
@@ -62,11 +62,11 @@ void GameGrid::draw_symbol(int row, int column, symbol symbol_used) {
     }
 }
 
-void GameGrid::draw_Cross() {
+void GameGrid::draw_win_line() {
     SDL_SetRenderDrawColor(renderer_used,
-        color_cross.r, color_cross.g, color_cross.b, color_cross.a
+        color_win.r, color_win.g, color_win.b, color_win.a
     );
-    RenderThickLine(renderer_used, start_cross, stop_cross, thickness);
+    RenderThickLine(renderer_used, start_win, stop_win, thickness);
 }
 
 void GameGrid::clear_grid_data() {
@@ -79,20 +79,16 @@ void GameGrid::clear_grid_data() {
     game_won = false;
 }
 
-void GameGrid::set_X(int row, int column) {
-    grid_data[row][column] = CELL_X;
+void GameGrid::set_cell_state(int row, int column, cell_state state) {
+    grid_data[row][column] = state;
 }
 
-void GameGrid::set_0(int row, int column) {
-    grid_data[row][column] = CELL_0;
-}
+void GameGrid::set_winner(grid_line_data data) {
+    start_win.x = grid_dim.x + data.start_column * cell_size + cell_size / 2;
+    start_win.y = grid_dim.y + data.start_row * cell_size + cell_size / 2;
 
-void GameGrid::set_winner(int start_row, int start_column, int stop_row, int stop_column) {
-    start_cross.x = grid_dim.x + start_column * cell_size + cell_size / 2;
-    start_cross.y = grid_dim.y + start_row * cell_size + cell_size / 2;
-
-    stop_cross.x = grid_dim.x + stop_column * cell_size + cell_size / 2;
-    stop_cross.y = grid_dim.y + stop_row* cell_size + cell_size / 2;
+    stop_win.x = grid_dim.x + data.stop_column * cell_size + cell_size / 2;
+    stop_win.y = grid_dim.y + data.stop_row* cell_size + cell_size / 2;
 
     game_won = true;
 }
@@ -115,9 +111,9 @@ bool GameGrid::check_mouse_cell(SDL_Point mouse_poz, int& row, int& column) {
 }
 
 GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
-    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_cross)
+    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_win)
     : renderer_used(renderer), grid_nr_columns(grd_nr_cols), grid_nr_rows(grd_nr_rows),
-    color_grid(col_grid), color_X(col_X), color_0(col_0), color_cross(col_cross) {
+    color_grid(col_grid), color_X(col_X), color_0(col_0), color_win(col_win) {
 
     // resize matrix with data
     grid_data.resize(grid_nr_rows);
@@ -160,16 +156,12 @@ void GameGrid::draw_grid() {
     // draw "X" and "0" symbols
     for (int i = 0; i < grid_nr_rows; i++) {
         for (int j = 0; j < grid_nr_columns; j++) {
-            switch(grid_data[i][j]) {
-                case CELL_X: draw_symbol(i, j, SYMBOL_X); break;
-                case CELL_0: draw_symbol(i, j, SYMBOL_0); break;
-                default: break;
-            }
+            draw_cell(i, j, grid_data[i][j]);
         }
     }
 
     // draw cross line for winner if case
     if (game_won == true) {
-        draw_Cross();
+        draw_win_line();
     }
 }

@@ -34,18 +34,37 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    //////
     GameGrid game_table(renderer, 3, 3, 
         {255, 255, 255, SDL_ALPHA_OPAQUE}, // grid color - white
         {255, 0, 0, SDL_ALPHA_OPAQUE}, // X color - red
         {0, 0, 255, SDL_ALPHA_OPAQUE}, // 0 color - blue
         {0, 255, 0, SDL_ALPHA_OPAQUE} // win cross color - green
     );
-
     ////
-    game_table.set_0(0, 0);
-    game_table.set_0(0, 1);
-    game_table.set_0(0, 2);
-    game_table.set_winner(0, 0, 0, 2);
+    GameLogic game_logic(3, 3, 3);
+    ////
+    game_logic.set_cell_state(0, 0, CELL_0);
+    game_logic.set_cell_state(0, 1, CELL_EMPTY);
+    game_logic.set_cell_state(0, 2, CELL_0);
+    game_logic.set_cell_state(1, 0, CELL_EMPTY);
+    game_logic.set_cell_state(1, 1, CELL_0);
+    game_logic.set_cell_state(1, 2, CELL_EMPTY);
+    game_logic.set_cell_state(2, 0, CELL_0);
+    game_logic.set_cell_state(2, 1, CELL_EMPTY);
+    game_logic.set_cell_state(2, 2, CELL_0);
+    game_logic.check_win(0, 1);
+    ////
+    game_table.set_cell_state(0, 0, CELL_0);
+    game_table.set_cell_state(0, 1, CELL_EMPTY);
+    game_table.set_cell_state(0, 2, CELL_0);
+    game_table.set_cell_state(1, 0, CELL_EMPTY);
+    game_table.set_cell_state(1, 1, CELL_0);
+    game_table.set_cell_state(1, 2, CELL_EMPTY);
+    game_table.set_cell_state(2, 0, CELL_0);
+    game_table.set_cell_state(2, 1, CELL_EMPTY);
+    game_table.set_cell_state(2, 2, CELL_0);
+    game_table.set_winner(game_logic.get_win_line_data());
     ////
     int mouseX;
     int mouseY;
