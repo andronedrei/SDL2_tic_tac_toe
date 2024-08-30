@@ -1,6 +1,31 @@
 #include <SDL2/SDL.h>
 #include <cmath>
 
+#include <custom/utils.h>
+
+GameModifiers::GameModifiers() {
+    nr_rows = 3;
+    nr_columns = 3;
+    nr_win_line = 3; // must be smaller than minimum of previous 2
+
+    grid_color = {255, 255, 255, SDL_ALPHA_OPAQUE};
+    color_X = {255, 0, 0, SDL_ALPHA_OPAQUE};
+    color_0 = {0, 0, 255, SDL_ALPHA_OPAQUE};
+    color_Z = {100, 100, 100, SDL_ALPHA_OPAQUE};
+    color_win = {0, 255, 0, SDL_ALPHA_OPAQUE};
+
+    nr_players = 2; // must be 2 or 3
+
+    type1 = HUMAN;
+    symbol1 = CELL_X; // must not be CELL_EMPTY and all different
+
+    type2 = HUMAN;
+    symbol2 = CELL_0;
+
+    type3 = HUMAN;
+    symbol3 = CELL_Z;
+}
+
 long PointsDist(SDL_Point p1, SDL_Point p2) {
     int dx = p2.x - p1.x;
     int dy = p2.y - p1.y;
