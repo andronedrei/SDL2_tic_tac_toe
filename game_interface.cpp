@@ -5,13 +5,17 @@
 #include "custom/game_interface.h"
 #include "custom/utils.h"
 
-void GameGrid::test_func() {
-    std::cout << "x y: " << grid_dim.x << " " << grid_dim.y << std::endl << "w h: " << grid_dim.w << " " << grid_dim.h << std::endl;
+void GameGrid::DEBUG_func() {
+    std::cout << "_____\nGRID DEBUG:\n";
+    std::cout << "NR CELLS: Nr rows: " << grid_nr_rows << " Nr columns: " << grid_nr_columns << "\n";
+    std::cout << "Dimensions: (x, y): " << grid_dim.x << " " << grid_dim.y << "\n";
+    std::cout << "(w, h): " << grid_dim.w << " " << grid_dim.h << "\n";
+    std::cout << "Cur mouse pos: (" << mouse_poz.x << "," << mouse_poz.y << ")" << "\n";
     for (int i = 0; i < grid_nr_rows; i++) {
         for (int j = 0; j < grid_nr_columns; j++) {
             std::cout << grid_data[i][j] << " ";
         }
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 }
 
@@ -37,11 +41,11 @@ void GameGrid::find_grid_dim() {
     grid_dim.y = std::max((get_vertical_fit_ratio(viewport.h) - grid_dim.h) / 2, 0);
 }
 
-void GameGrid::draw_cell(int row, int column, cell_state symbol_used) {
+void GameGrid::draw_cell(cell_pos pos, cell_state symbol_used) {
     SDL_Rect cell_dim;
 
-    cell_dim.x = grid_dim.x + column * cell_size;
-    cell_dim.y = grid_dim.y + row * cell_size;
+    cell_dim.x = grid_dim.x + pos.column * cell_size;
+    cell_dim.y = grid_dim.y + pos.row * cell_size;
     cell_dim.w = cell_size;
     cell_dim.h = cell_size;
 
@@ -79,22 +83,26 @@ void GameGrid::clear_grid_data() {
     game_won = false;
 }
 
-void GameGrid::set_cell_state(int row, int column, cell_state state) {
-    grid_data[row][column] = state;
+void GameGrid::set_cell_state(cell_pos pos, cell_state state) {
+    grid_data[pos.row][pos.column] = state;
 }
 
 void GameGrid::set_winner(grid_line_data data) {
-    start_win.x = grid_dim.x + data.start_column * cell_size + cell_size / 2;
-    start_win.y = grid_dim.y + data.start_row * cell_size + cell_size / 2;
+    start_win.x = grid_dim.x + data.start_cell.column * cell_size + cell_size / 2;
+    start_win.y = grid_dim.y + data.start_cell.row * cell_size + cell_size / 2;
 
-    stop_win.x = grid_dim.x + data.stop_column * cell_size + cell_size / 2;
-    stop_win.y = grid_dim.y + data.stop_row* cell_size + cell_size / 2;
+    stop_win.x = grid_dim.x + data.stop_cell.column * cell_size + cell_size / 2;
+    stop_win.y = grid_dim.y + data.stop_cell.row * cell_size + cell_size / 2;
 
     game_won = true;
 }
 
+void GameGrid::set_mouse_poz(SDL_Point point) {
+    mouse_poz = point;
+}
+
 // function to check whether mouse hovers over a valid cell (saves row and column)
-bool GameGrid::check_mouse_cell(SDL_Point mouse_poz, int& row, int& column) {
+bool GameGrid::check_mouse_cell(cell_pos& pos) {
     // first check whether mouse is inside grid
     if (mouse_poz.x < grid_dim.x || mouse_poz.x > grid_dim.x + grid_dim.w) {
         return false;
@@ -104,10 +112,10 @@ bool GameGrid::check_mouse_cell(SDL_Point mouse_poz, int& row, int& column) {
         return false;
     }
 
-    column = (mouse_poz.x - grid_dim.x) / cell_size;
-    row = (mouse_poz.y - grid_dim.y) / cell_size;
+    pos.column = (mouse_poz.x - grid_dim.x) / cell_size;
+    pos.row = (mouse_poz.y - grid_dim.y) / cell_size;
 
-    return grid_data[row][column] == CELL_EMPTY ? true : false;
+    return grid_data[pos.row][pos.column] == CELL_EMPTY ? true : false;
 }
 
 GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
@@ -156,7 +164,7 @@ void GameGrid::draw_grid() {
     // draw "X" and "0" symbols
     for (int i = 0; i < grid_nr_rows; i++) {
         for (int j = 0; j < grid_nr_columns; j++) {
-            draw_cell(i, j, grid_data[i][j]);
+            draw_cell({i, j}, grid_data[i][j]);
         }
     }
 

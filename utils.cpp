@@ -16,14 +16,20 @@ GameModifiers::GameModifiers() {
 
     nr_players = 2; // must be 2 or 3
 
-    type1 = HUMAN;
+    type1 = ROBOT;
     symbol1 = CELL_X; // must not be CELL_EMPTY and all different
+    diff1 = EASY; // diff of a potential robot player. For huma player use "NOT_ROBOT"
 
     type2 = HUMAN;
     symbol2 = CELL_0;
+    diff2 = HUMAN_DIFF;
 
     type3 = HUMAN;
     symbol3 = CELL_Z;
+    diff3 = HUMAN_DIFF;
+
+    small_dellay = 25; // delay in ms
+    big_delay = 2000;
 }
 
 long PointsDist(SDL_Point p1, SDL_Point p2) {

@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
 
     game_manager->game_loop();
     game_manager->exit_game_window();
-    delete game_manager; // delete game data
+    delete game_manager; // delete game data, destructor can be called
 
     return 0;
 }

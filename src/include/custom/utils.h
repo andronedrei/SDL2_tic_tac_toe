@@ -15,11 +15,21 @@ enum cell_state {
     CELL_EMPTY
 };
 
+enum robot_difficulty {
+    EASY,
+    HARD,
+    HUMAN_DIFF // <=> "NULL" for this enum
+};
+
+
+struct cell_pos {
+    int row;
+    int column;
+};
+
 struct grid_line_data {
-    int start_row;
-    int start_column;
-    int stop_row;
-    int stop_column;
+    cell_pos start_cell;
+    cell_pos stop_cell;
 };
 
 struct GameModifiers {
@@ -37,12 +47,18 @@ struct GameModifiers {
 
     player_type type1; // type of first player
     cell_state symbol1; // symbol of first player
+    robot_difficulty diff1; // diff of a potential robot player. For huma player use "NOT_ROBOT"
 
     player_type type2; // type of second player
     cell_state symbol2; // symbol of second player
+    robot_difficulty diff2;
 
     player_type type3; // type of thirth player
     cell_state symbol3; // type of thirth player
+    robot_difficulty diff3;
+
+    int small_dellay; // delay in ms
+    int big_delay;
 
     GameModifiers(); // change this function to easily change game modifiers
 };

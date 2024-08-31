@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 
 #include "custom/game_logic.h"
 #include "custom/game_interface.h"
@@ -14,22 +15,59 @@ GameLogic::GameLogic(int n_rows, int n_cols, int n_win_line)
     }
     clear_game_data();
 
-    cur_row = 0;
-    cur_column = 0;
+    cur_pos = {0, 0};
+    nr_used_cells = 0;
 
-    win_line_data.start_row = 0;
-    win_line_data.start_column = 0;
-    win_line_data.stop_row = 0;
-    win_line_data.stop_column = 0;
+    win_line_data.start_cell.row = 0;
+    win_line_data.start_cell.column = 0;
+    win_line_data.stop_cell.row = 0;
+    win_line_data.stop_cell.column = 0;
 }
 
 GameLogic::~GameLogic() {};
 
-void GameLogic::set_cell_state(int row, int column, cell_state state) {
-    game_data[row][column] = state;
+void GameLogic::DEBUG_func() {
+    std::cout << "_____\nLOGIC DEBUG:\n";
+    std::cout << "NR CELLS: Nr rows: " << nr_rows << " Nr columns: " << nr_columns << "\n";
+    std::cout << "NR_WIN_LINE: " << nr_win_line << "\n";
+    std::cout << "CUR POS: (" << cur_pos.row << "," << cur_pos.column << ")\n";
+    for (int i = 0; i < nr_rows; i++) {
+        for (int j = 0; j < nr_columns; j++) {
+            std::cout << game_data[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+}
 
-    cur_row = row;
-    cur_column = column;
+cell_state GameLogic::get_cell_state(cell_pos pos) {
+    return game_data[pos.row][pos.column];
+}
+
+int GameLogic::get_nr_rows() {
+    return nr_rows;
+}
+
+int GameLogic::get_nr_columns() {
+    return nr_columns;
+}
+
+int GameLogic::get_nr_used_cells() {
+    return nr_used_cells;
+}
+
+void GameLogic::set_cell_state(cell_pos pos, cell_state state) {
+    if (game_data[pos.row][pos.column] == CELL_EMPTY &&  state != CELL_EMPTY) {
+        nr_used_cells++;
+    }
+
+    if (game_data[pos.row][pos.column] != CELL_EMPTY &&  state == CELL_EMPTY) {
+        nr_used_cells--;
+    }
+
+    game_data[pos.row][pos.column] = state;
+
+    cur_pos.row = pos.row;
+    cur_pos.column = pos.column;
 }
 
 bool GameLogic::check_win_row(int row, int column) {
@@ -56,10 +94,10 @@ bool GameLogic::check_win_row(int row, int column) {
     
         if (jump == false) { // win line
             // we save row and column for win line endpoints
-            win_line_data.start_row = row;
-            win_line_data.start_column = group_first_col;
-            win_line_data.stop_row = row;
-            win_line_data.stop_column = group_first_col + nr_win_line - 1;
+            win_line_data.start_cell.row = row;
+            win_line_data.start_cell.column = group_first_col;
+            win_line_data.stop_cell.row = row;
+            win_line_data.stop_cell.column = group_first_col + nr_win_line - 1;
        
             return true;
         } else {
@@ -94,10 +132,10 @@ bool GameLogic::check_win_column(int row, int column) {
     
         if (jump == false) { // win line
             // we save row and column for win line endpoints
-            win_line_data.start_row = group_first_row;
-            win_line_data.start_column = column;    
-            win_line_data.stop_row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_column = column;
+            win_line_data.start_cell.row = group_first_row;
+            win_line_data.start_cell.column = column;    
+            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
+            win_line_data.stop_cell.column = column;
             return true;
         } else {
             group_first_row = next_first_row;
@@ -138,10 +176,10 @@ bool GameLogic::check_win_diag1(int row, int column) {
         }
     
         if (jump == false) {
-            win_line_data.start_row = group_first_row;
-            win_line_data.start_column = group_first_col;    
-            win_line_data.stop_row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_column = group_first_col + nr_win_line - 1;
+            win_line_data.start_cell.row = group_first_row;
+            win_line_data.start_cell.column = group_first_col;    
+            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
+            win_line_data.stop_cell.column = group_first_col + nr_win_line - 1;
             return true;
         } else {
             group_first_row = next_first_row;
@@ -184,10 +222,10 @@ bool GameLogic::check_win_diag2(int row, int column) {
         }
     
         if (jump == false) {
-            win_line_data.start_row = group_first_row;
-            win_line_data.start_column = group_first_col;    
-            win_line_data.stop_row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_column = group_first_col - nr_win_line + 1;
+            win_line_data.start_cell.row = group_first_row;
+            win_line_data.start_cell.column = group_first_col;    
+            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
+            win_line_data.stop_cell.column = group_first_col - nr_win_line + 1;
             return true;
         } else {
             group_first_row = next_first_row;
@@ -199,15 +237,19 @@ bool GameLogic::check_win_diag2(int row, int column) {
 }
 
 bool GameLogic::check_win() {
-    ////
-    // std::cout << "ROW: " << check_win_row(cur_row, cur_column)
-    //         << "| COL: " << check_win_column(cur_row, cur_column) 
-    //         << "| DIAG1: " << check_win_diag1(cur_row, cur_column)
-    //         << "| DIAG2: " << check_win_diag2(cur_row, cur_column) << "\n";
-    ////
+    // DEBUG
+    std::cout << "_____\nWIN COND DEBUG:\n";
+    std::cout << "ROW WIN: " << check_win_row(cur_pos.row, cur_pos.column)
+            << "| COL WIN: " << check_win_column(cur_pos.row, cur_pos.column) 
+            << "| DIAG1_WIN: " << check_win_diag1(cur_pos.row, cur_pos.column)
+            << "| DIAG2_WIN: " << check_win_diag2(cur_pos.row, cur_pos.column) << "\n";
+    //
 
-    return check_win_row(cur_row, cur_column) || check_win_column(cur_row, cur_column)
-        || check_win_diag1(cur_row, cur_column) || check_win_diag2(cur_row, cur_column);
+    // check all possibilities of win
+    return check_win_row(cur_pos.row, cur_pos.column) 
+        || check_win_column(cur_pos.row, cur_pos.column)
+        || check_win_diag1(cur_pos.row, cur_pos.column)
+        || check_win_diag2(cur_pos.row, cur_pos.column);
 }
 
 grid_line_data GameLogic::get_win_line_data() {
@@ -234,41 +276,87 @@ player_type Player::get_type() {
 Human::Human(cell_state s, GameLogic* gl, GameGrid* gg)
     : Player(HUMAN, s, gl, gg) {};
 
-bool Human::human_action(SDL_Point mouse_poz) {
-    int row, column;
+bool Human::human_action() {
+    cell_pos pos;
 
-    if (game_grid_p->check_mouse_cell(mouse_poz, row, column) == true) {
-        game_grid_p->set_cell_state(row, column, used_symbol);
-        game_logic_p->set_cell_state(row, column, used_symbol);
+    if (game_grid_p->check_mouse_cell(pos) == true) {
+        game_grid_p->set_cell_state(pos, used_symbol);
+        game_logic_p->set_cell_state(pos, used_symbol);
 
         return true;
     }
     return false;
 }
 
-bool Human::do_next_action(SDL_Point mouse_poz) {
-    return human_action(mouse_poz);
+bool Human::do_next_action() {
+    return human_action();
 }
 
-Robot::Robot(cell_state s, GameLogic* gl, GameGrid* gg)
-    : Player(ROBOT, s, gl, gg) {};
+Robot::Robot(cell_state s, GameLogic* gl, GameGrid* gg, robot_difficulty diff)
+    : Player(ROBOT, s, gl, gg), difficulty(diff) {};
 
 Robot::~Robot() {
 
 };
 
-bool Robot::robot_action() {
+bool Robot::easy_robot_action() {
+    std::vector<cell_pos> available_cells;
+    int nr_rows = game_logic_p->get_nr_rows();
+    int nr_columns = game_logic_p->get_nr_columns();
+    int rand_poz;
+
+    for (int i = 0; i < nr_rows; i++) {
+        for (int j = 0; j < nr_columns; j++) {
+            if (game_logic_p->get_cell_state({i, j}) == CELL_EMPTY) {
+                available_cells.push_back({i, j});
+            }
+        }
+    }
+
+    if (available_cells.size() == 0) {
+        return false;
+    }
+
+    rand_poz = std::rand() % available_cells.size();
+
+    game_logic_p->set_cell_state({available_cells[rand_poz].row, 
+        available_cells[rand_poz].column}, 
+        used_symbol
+    );
+
+    game_grid_p->set_cell_state({available_cells[rand_poz].row, 
+        available_cells[rand_poz].column}, 
+        used_symbol
+    );
+
+    return true;    
+}
+
+bool Robot::hard_robot_action() {
     return false;
 }
 
-bool Robot::do_next_action(SDL_Point mouse_poz) {
-    return robot_action();
+
+bool Robot::do_next_action() {
+    switch(difficulty) {
+        case EASY: return easy_robot_action();
+        case HARD: return hard_robot_action();
+        default: return false;
+    }
+
+    return false;
 }
 
-void GameManager::add_player(player_type type, cell_state symbol) {
+void GameManager::add_player(player_type type, cell_state symbol, robot_difficulty diff) {
+    // make sure a player is assigned a proper symbol
+    if (symbol == CELL_EMPTY) {
+        std::cerr << "Invalid symbol assignation for player's cells state" << "\n";
+        return;
+    }
+
     switch (type) {
         case HUMAN: players.push_back(new Human(symbol, game_logic, game_grid)); break;
-        case ROBOT: players.push_back(new Robot(symbol, game_logic, game_grid)); break;
+        case ROBOT: players.push_back(new Robot(symbol, game_logic, game_grid, diff)); break;
         default: break;
     }
 
@@ -276,8 +364,6 @@ void GameManager::add_player(player_type type, cell_state symbol) {
 }
 
 GameManager::GameManager() {
-    GameModifiers game_modifiers; // modify source later
-
     // initialize SDL related aspects
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -317,8 +403,10 @@ GameManager::GameManager() {
     nr_players = 0;
     cur_player = 0;
 
-    add_player(game_modifiers.type1, game_modifiers.symbol1);
-    add_player(game_modifiers.type2, game_modifiers.symbol2);
+    add_player(game_modifiers.type1, game_modifiers.symbol1, game_modifiers.diff1);
+    add_player(game_modifiers.type2, game_modifiers.symbol2, game_modifiers.diff2);
+
+    srand(time(NULL)); // seed the random generator for potential robot players
 }
 
 GameManager::~GameManager() {
@@ -334,18 +422,37 @@ void GameManager::change_player_turn() {
     cur_player = (cur_player + 1) % nr_players;
 }
 
-bool GameManager::decide_win() {
+bool GameManager::decide_win_or_draw() {
     if (game_logic->check_win() == true) {
         game_grid->set_winner(game_logic->get_win_line_data());
+        return true;
+        
+        // DEBUG
+        std::cout << "_____\nWIN LINE DRAW DEBUG:\n";
+        grid_line_data aux = game_logic->get_win_line_data();
+        std::cout << "(" << aux.start_cell.row << "," << aux.start_cell.column << ") -> ";
+        std::cout << "(" << aux.stop_cell.row << "," << aux.stop_cell.column << ")" << "\n";
+    }
+
+    // check if all cells have been used
+    if (game_logic->get_nr_used_cells() == 
+        game_logic->get_nr_rows() * game_logic->get_nr_columns()) {
+        
         return true;
     }
 
     return false;
 }
 
+void GameManager::DEBUG_func() {
+    game_grid->DEBUG_func();
+    game_logic->DEBUG_func();
+    std::cout << "_____\nPLAYER ORDER DEBUG:\n";
+    std:: cout << "NEXT PLAYER ORDER MOVE: " << cur_player <<  "\n";
+}
+
 void GameManager::game_loop() {
     bool run_game = true;
-    bool delay_more = false;
     int mouseX, mouseY;
 
     while(run_game) { 
@@ -356,25 +463,56 @@ void GameManager::game_loop() {
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 mouseX = event.button.x;
                 mouseY = event.button.y;
+
+                // we set mouse position for a potential action
+                game_grid->set_mouse_poz({mouseX, mouseY});
             
                 if (players[cur_player]->get_type() == HUMAN) {
-                    if (players[cur_player]->do_next_action({mouseX, mouseY}) == true) {
+                    // make next action and check if it was a succes so we can change turn
+                    if (players[cur_player]->do_next_action() == true) {
+                        // DEBUG
+                        std::cout << "SUCCES HUMAN ACTON WITH NR: " << cur_player << "\n";
                         change_player_turn();
+                    } else {
+                        // DEBUG
+                        std::cout << "FAILURE HUMAN ACTION WITH NR: " << cur_player << "\n";
                     }
+
+                    DEBUG_func();
+
+                    if (decide_win_or_draw() == true) {
+                        run_game = false;
+                    }
+
+                    // DEBUG
+                    std::cout << "\n" << std::endl;
                 }
             }
         }
 
-        if (players[cur_player]->get_type() == ROBOT) {
-            if (players[cur_player]->do_next_action({mouseX, mouseY}) == true) {
-                change_player_turn();
+        if (run_game == true) { // make sure game was not already won by previous human action
+            if (players[cur_player]->get_type() == ROBOT) {
+                if (players[cur_player]->do_next_action() == true) {
+                    // DEBUG
+                    std::cout << "SUCCES ROBOT ACTON WITH NR: " << cur_player << "\n";
+                    change_player_turn();
+                } else {
+                    // DEBUG
+                    std::cout << "FAILURE ROBOT ACTON WITH NR: " << cur_player << "\n";
+                }
+
+                DEBUG_func();
+
+                if (decide_win_or_draw() == true) {
+                    run_game = false;
+                }
+
+                // DEBUG
+                std::cout << "\n" << std::endl;
             }
         }
 
-        if (decide_win() == true) {
-            run_game = false;
-            delay_more = true;
-        }
+
 
         // clear renderer before drawing
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // black background
@@ -386,11 +524,8 @@ void GameManager::game_loop() {
         // update renderer to display image
         SDL_RenderPresent(renderer);
 
-        if (delay_more == true) {
-            SDL_Delay(2000);
-        } else {
-            SDL_Delay(25);
-        }
+        run_game == false ? SDL_Delay(game_modifiers.big_delay) : 
+            SDL_Delay(game_modifiers.small_dellay);
     }
 }
 
