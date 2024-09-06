@@ -1,9 +1,84 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
 #include <iostream>
 #include <vector>
 
 #include "custom/game_interface.h"
 #include "custom/utils.h"
+
+SDL_Renderer* GameWindow::get_renderer() {
+    return renderer;
+}
+
+GameWindow::GameWindow() {
+    display_index = 0;
+
+    // initialize SDL related aspects
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cerr << "Could not initialize SDL video: " << SDL_GetError() << std::endl;
+    }
+
+    if (IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG == 0) {
+        std::cerr << "Could not initialize IMAGE sdl: " << IMG_GetError() << std::endl;
+    }
+
+    // get display resolution
+    if (SDL_GetCurrentDisplayMode(0, &display_mode) != 0) {
+        std::cerr << "Could not get display mod: " << SDL_GetError() << std::endl;
+    }
+
+    window = SDL_CreateWindow("TicTacToe", 
+        SDL_WINDOWPOS_CENTERED, 
+        SDL_WINDOWPOS_CENTERED, 
+        720,//display_mode.w,
+        480,//display_mode.h,
+        SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN
+    );
+    if (window == nullptr) {
+        std::cerr << "Could not create window: " << SDL_GetError() << std::endl;
+    }
+
+    renderer = SDL_CreateRenderer(window,
+        -1, 
+        SDL_RENDERER_ACCELERATED
+    );
+    if (renderer == nullptr) {
+        std::cerr << "Could not create renderer: " << SDL_GetError() << std::endl; 
+    }
+
+    SDL_Surface *surface = IMG_Load("src\\assets\\background.jpg");
+    if (surface == nullptr) {
+        std::cerr << "Could not load image: " << SDL_GetError() << std::endl; 
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (surface == nullptr) {
+        std::cerr << "Could not load texture: " << SDL_GetError() << std::endl; 
+    }
+    // free the surface as it s now in video memory
+    SDL_FreeSurface(surface);
+}
+
+void GameWindow::prepare_render() { // use before updating visual elements and render
+    // clear renderer before drawing
+    // SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // black background
+    SDL_RenderClear(renderer);
+
+    SDL_RenderCopy(renderer, texture, nullptr, nullptr); // render the background
+}
+
+void GameWindow::render() { // use after updating visual elements and prepare_render
+    SDL_RenderPresent(renderer);
+}
+
+GameWindow::~GameWindow() {
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);    
+    SDL_DestroyWindow(window);
+    IMG_Quit();
+    SDL_Quit();
+}
 
 void GameGrid::DEBUG_func() {
     std::cout << "_____\nGRID DEBUG:\n";

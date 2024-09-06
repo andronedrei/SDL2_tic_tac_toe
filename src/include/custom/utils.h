@@ -57,7 +57,7 @@ struct GameModifiers {
     cell_state symbol3; // type of thirth player
     robot_difficulty diff3;
 
-    int small_dellay; // delay in ms
+    int small_delay; // delay in ms
     int big_delay;
 
     GameModifiers(); // change this function to easily change game modifiers

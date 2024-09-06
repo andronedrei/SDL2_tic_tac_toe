@@ -2,9 +2,11 @@
 #define GAME_LOGIC_H
 
 #include <vector>
+#include <SDL2/SDL.h>
 
 #include "custom/utils.h"
 
+class GameWindow;
 class GameGrid;
 
 class GameLogic {
@@ -83,14 +85,12 @@ class GameManager {
   private:
     GameModifiers game_modifiers; // variables that affect game and can be easily modified
   
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    SDL_Event event;
-    
+    GameWindow* game_window;  
     GameLogic* game_logic;
     GameGrid* game_grid;
     std::vector<Player*> players; // nr of players should be 2 or 3
 
+    SDL_Event event;
     int nr_players;
     int cur_player;
 
@@ -104,7 +104,6 @@ class GameManager {
     GameManager();
     ~GameManager();
     void game_loop();
-    void exit_game_window();
 };
 
 #endif

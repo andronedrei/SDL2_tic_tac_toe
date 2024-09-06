@@ -28,7 +28,7 @@ GameModifiers::GameModifiers() {
     symbol3 = CELL_Z;
     diff3 = HUMAN_DIFF;
 
-    small_dellay = 25; // delay in ms
+    small_delay = 25; // delay in ms
     big_delay = 2000;
 }
 

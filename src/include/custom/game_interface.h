@@ -6,11 +6,29 @@
 
 #include "custom/utils.h"
 
+class GameWindow {
+  private:
+    int display_index;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+    SDL_DisplayMode display_mode; // used to collect data about display size
+
+  public:
+    SDL_Renderer* get_renderer();
+    GameWindow();
+    // use before updating visual elements and render
+    void prepare_render();
+    // use after updating visual elements and prepare_render
+    void render();
+    ~GameWindow();
+};
+
 class GameGrid {
   private:
     SDL_Rect viewport;
     SDL_Rect grid_dim;
-    SDL_Renderer* renderer_used; // pointer to used renderer
+    SDL_Renderer* renderer_used; // pointer to the renderer used
 
     int grid_nr_columns;
     int grid_nr_rows;

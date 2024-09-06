@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include <SDL2/SDL_image.h>
 
 #include "custom/game_logic.h"
 #include "custom/game_interface.h"
@@ -364,34 +365,14 @@ void GameManager::add_player(player_type type, cell_state symbol, robot_difficul
 }
 
 GameManager::GameManager() {
-    // initialize SDL related aspects
-    SDL_Init(SDL_INIT_VIDEO);
-
-    window = SDL_CreateWindow("TicTacToe", 
-        SDL_WINDOWPOS_CENTERED, 
-        SDL_WINDOWPOS_CENTERED, 
-        720,
-        480,
-        SDL_WINDOW_SHOWN
-    );
-    if (window == nullptr) {
-        std::cerr << "Could not create window: " << SDL_GetError();
-    }
-
-    renderer = SDL_CreateRenderer(window,
-        -1, 
-        SDL_RENDERER_ACCELERATED
-    );
-    if (renderer == nullptr) {
-        std::cerr << "Could not create renderer: " << SDL_GetError();
-    }
+    game_window = new GameWindow();
 
     game_logic = new GameLogic(game_modifiers.nr_rows,
         game_modifiers.nr_columns,
         game_modifiers.nr_win_line
     );
 
-    game_grid = new GameGrid(renderer,
+    game_grid = new GameGrid(game_window->get_renderer(),
         game_modifiers.nr_rows,
         game_modifiers.nr_columns,
         game_modifiers.grid_color,
@@ -412,6 +393,7 @@ GameManager::GameManager() {
 GameManager::~GameManager() {
     delete game_logic; // destructor should be automatically called
     delete game_grid;
+    delete game_window;
 
     for (Player* player : players) {
         delete player;
@@ -459,6 +441,7 @@ void GameManager::game_loop() {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 run_game = false;
+                break;
             }
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 mouseX = event.button.x;
@@ -512,25 +495,11 @@ void GameManager::game_loop() {
             }
         }
 
-
-
-        // clear renderer before drawing
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // black background
-        SDL_RenderClear(renderer);
-
-        // main logic of game
-        game_grid->draw_grid();
-
-        // update renderer to display image
-        SDL_RenderPresent(renderer);
+        game_window->prepare_render();
+        //game_grid->draw_grid();
+        game_window->render();
 
         run_game == false ? SDL_Delay(game_modifiers.big_delay) : 
-            SDL_Delay(game_modifiers.small_dellay);
+            SDL_Delay(game_modifiers.small_delay);
     }
-}
-
-void GameManager::exit_game_window() {
-    SDL_DestroyRenderer(renderer);    
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 }
