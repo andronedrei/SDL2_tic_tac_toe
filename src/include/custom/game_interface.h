@@ -39,6 +39,7 @@ class GameGrid {
     SDL_Color color_grid;
     SDL_Color color_X;
     SDL_Color color_0;
+    SDL_Color color_Z;
 
     SDL_Point mouse_poz; // used to store mouse position at last relevant position
 
@@ -67,7 +68,7 @@ class GameGrid {
     bool check_mouse_cell(cell_pos& pos);
 
     GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
-        SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_win);
+      SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_Z, SDL_Color col_win);
     ~GameGrid();
     void draw_grid();
     // function that should be used each time after window was resized to update grid

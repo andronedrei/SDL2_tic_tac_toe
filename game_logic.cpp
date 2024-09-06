@@ -375,6 +375,7 @@ GameManager::GameManager() {
         game_modifiers.grid_color,
         game_modifiers.color_X,
         game_modifiers.color_0,
+        game_modifiers.color_Z,
         game_modifiers.color_win
     );
 

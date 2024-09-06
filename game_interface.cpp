@@ -143,6 +143,12 @@ void GameGrid::draw_cell(cell_pos pos, cell_state symbol_used) {
             );
             Render0(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
             break;
+        case CELL_Z:
+            SDL_SetRenderDrawColor(renderer_used, 
+                color_Z.r, color_Z.g, color_Z.b, color_Z.a
+            );
+            RenderZ(renderer_used, cell_dim, thickness * 2); // we use double thickness for symbols
+            break;
         default: break;
     }
 }
@@ -200,9 +206,9 @@ bool GameGrid::check_mouse_cell(cell_pos& pos) {
 }
 
 GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
-    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_win)
+    SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_Z, SDL_Color col_win)
     : renderer_used(renderer), grid_nr_columns(grd_nr_cols), grid_nr_rows(grd_nr_rows),
-    color_grid(col_grid), color_X(col_X), color_0(col_0), color_win(col_win) {
+    color_grid(col_grid), color_X(col_X), color_0(col_0), color_Z(col_Z), color_win(col_win) {
 
     // resize matrix with data
     grid_data.resize(grid_nr_rows);

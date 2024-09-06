@@ -19,10 +19,10 @@ GameModifiers::GameModifiers() {
 
     type1 = ROBOT;
     symbol1 = CELL_X; // must not be CELL_EMPTY and all different
-    diff1 = EASY; // diff of a potential robot player. For huma player use "NOT_ROBOT"
+    diff1 = EASY; // diff of a potential robot player. For human player use "NOT_ROBOT"
 
     type2 = HUMAN;
-    symbol2 = CELL_0;
+    symbol2 = CELL_Z;
     diff2 = HUMAN_DIFF;
 
     type3 = HUMAN;
@@ -112,6 +112,29 @@ void Render0(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness) {
 }
 
 void RenderZ(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness) {
+    int offset = std::min(dimensions.w, dimensions.h) / 10; // offset so it doesn t touch margins
+
+    // draw upper line
+    RenderThickLine(renderer, 
+        {dimensions.x + offset, dimensions.y + offset}, 
+        {dimensions.x + dimensions.w - offset, dimensions.y + offset}, 
+        thickness
+    );
+
+    // draw diag line
+    RenderThickLine(renderer, 
+        {dimensions.x + dimensions.w - offset, dimensions.y + offset}, 
+        {dimensions.x + offset, dimensions.y + dimensions.h - offset}, 
+        thickness
+    );
+
+    // draw lower line
+    RenderThickLine(renderer, 
+        {dimensions.x + offset, dimensions.y + dimensions.h - offset}, 
+        {dimensions.x + dimensions.w - offset, dimensions.y + dimensions.h - offset}, 
+        thickness
+    );
+
 }
 
 // resizes a surface 
