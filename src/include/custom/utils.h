@@ -69,5 +69,12 @@ long LineSlope(SDL_Point p1, SDL_Point p2);
 void RenderThickLine(SDL_Renderer *renderer, SDL_Point start, SDL_Point stop, int thickness);
 void RenderX(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness);
 void Render0(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness);
+void RenderZ(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness);
+ 
+// resize a surface to a desired size
+SDL_Surface* ResizeSurface(SDL_Surface* original_surface, int window_width, int window_height);
+// creeate a texture of desired size from a surface
+SDL_Texture* CreateSizedTexture(SDL_Renderer* renderer, SDL_Surface* original_surface, int window_width, int window_height);
+SDL_Texture* CreateSizedTextureFromBMP(SDL_Renderer *renderer, const char *image_file_name, int window_width, int window_height);
 
 #endif

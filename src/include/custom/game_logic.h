@@ -24,8 +24,6 @@ class GameLogic {
     bool check_win_diag1(int row, int column);
     bool check_win_diag2(int row, int column);
   public:
-    void DEBUG_func();
-
     // getters and setters
     cell_state get_cell_state(cell_pos pos);
     int get_nr_rows();
@@ -40,6 +38,8 @@ class GameLogic {
     GameLogic(int n_rows, int n_cols, int n_win_line);
     ~GameLogic();
     void clear_game_data();
+
+    void DEBUG_func();
 };
 
 // abstract class
@@ -97,6 +97,7 @@ class GameManager {
     void add_player(player_type type, cell_state symbol, robot_difficulty diff);
     void change_player_turn();
     bool decide_win_or_draw(); //function to decide ppotential win or draw and make necessary changes
+    void handle_resize_event();
 
     void DEBUG_func();
 

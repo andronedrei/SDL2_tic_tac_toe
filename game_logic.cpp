@@ -1,7 +1,6 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
-#include <SDL2/SDL_image.h>
 
 #include "custom/game_logic.h"
 #include "custom/game_interface.h"
@@ -296,9 +295,7 @@ bool Human::do_next_action() {
 Robot::Robot(cell_state s, GameLogic* gl, GameGrid* gg, robot_difficulty diff)
     : Player(ROBOT, s, gl, gg), difficulty(diff) {};
 
-Robot::~Robot() {
-
-};
+Robot::~Robot() {};
 
 bool Robot::easy_robot_action() {
     std::vector<cell_pos> available_cells;
@@ -426,6 +423,11 @@ bool GameManager::decide_win_or_draw() {
     return false;
 }
 
+void GameManager::handle_resize_event() {
+    game_window->handle_resize();
+    game_grid->update_grid_dim();
+}
+
 void GameManager::DEBUG_func() {
     game_grid->DEBUG_func();
     game_logic->DEBUG_func();
@@ -471,6 +473,11 @@ void GameManager::game_loop() {
                     std::cout << "\n" << std::endl;
                 }
             }
+            if (event.type == SDL_WINDOWEVENT) {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    handle_resize_event();
+                }
+            }
         }
 
         if (run_game == true) { // make sure game was not already won by previous human action
@@ -496,7 +503,7 @@ void GameManager::game_loop() {
         }
 
         game_window->prepare_render();
-        //game_grid->draw_grid();
+        game_grid->draw_grid();
         game_window->render();
 
         run_game == false ? SDL_Delay(game_modifiers.big_delay) : 

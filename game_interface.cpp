@@ -1,5 +1,4 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 
 #include <iostream>
 #include <vector>
@@ -11,6 +10,10 @@ SDL_Renderer* GameWindow::get_renderer() {
     return renderer;
 }
 
+SDL_Window* GameWindow::get_window() {
+    return window;
+}
+
 GameWindow::GameWindow() {
     display_index = 0;
 
@@ -19,25 +22,20 @@ GameWindow::GameWindow() {
         std::cerr << "Could not initialize SDL video: " << SDL_GetError() << std::endl;
     }
 
-    if (IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG == 0) {
-        std::cerr << "Could not initialize IMAGE sdl: " << IMG_GetError() << std::endl;
-    }
-
-    // get display resolution
-    if (SDL_GetCurrentDisplayMode(0, &display_mode) != 0) {
-        std::cerr << "Could not get display mod: " << SDL_GetError() << std::endl;
-    }
-
     window = SDL_CreateWindow("TicTacToe", 
         SDL_WINDOWPOS_CENTERED, 
         SDL_WINDOWPOS_CENTERED, 
         720,//display_mode.w,
         480,//display_mode.h,
-        SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE // SDL_WINDOW_FULLSCREEN
     );
     if (window == nullptr) {
         std::cerr << "Could not create window: " << SDL_GetError() << std::endl;
     }
+    // get window dimensions
+    SDL_GetWindowSize(window, &viewport.w, &viewport.h);
+    viewport.x = 0;
+    viewport.y = 0;
 
     renderer = SDL_CreateRenderer(window,
         -1, 
@@ -47,36 +45,43 @@ GameWindow::GameWindow() {
         std::cerr << "Could not create renderer: " << SDL_GetError() << std::endl; 
     }
 
-    SDL_Surface *surface = IMG_Load("src\\assets\\background.jpg");
-    if (surface == nullptr) {
-        std::cerr << "Could not load image: " << SDL_GetError() << std::endl; 
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (surface == nullptr) {
-        std::cerr << "Could not load texture: " << SDL_GetError() << std::endl; 
-    }
-    // free the surface as it s now in video memory
-    SDL_FreeSurface(surface);
+    background = CreateSizedTextureFromBMP(renderer, "src/assets/background.bmp", viewport.w, viewport.h);
 }
 
 void GameWindow::prepare_render() { // use before updating visual elements and render
     // clear renderer before drawing
-    // SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // black background
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // black background
     SDL_RenderClear(renderer);
 
-    SDL_RenderCopy(renderer, texture, nullptr, nullptr); // render the background
+    // display background in renderer
+    SDL_RenderCopy(renderer, background, nullptr, nullptr);
 }
 
 void GameWindow::render() { // use after updating visual elements and prepare_render
+    //SDL_UpdateWindowSurface(window);
     SDL_RenderPresent(renderer);
 }
 
+void GameWindow::handle_resize() {
+    // destroy old background
+    if (background != nullptr) {
+        SDL_DestroyTexture(background);
+    }
+
+    // update renderer
+    SDL_GetWindowSize(window, &viewport.w, &viewport.h);
+    viewport.x = 0;
+    viewport.y = 0;
+    SDL_RenderSetViewport(renderer, &viewport);
+
+    // prepare new background
+    background = CreateSizedTextureFromBMP(renderer, "src/assets/background.bmp", viewport.w, viewport.h);
+}
+
 GameWindow::~GameWindow() {
-    SDL_DestroyTexture(texture);
+    SDL_DestroyTexture(background);
     SDL_DestroyRenderer(renderer);    
     SDL_DestroyWindow(window);
-    IMG_Quit();
     SDL_Quit();
 }
 
@@ -98,7 +103,8 @@ int GameGrid::get_vertical_fit_ratio(int height) {
     return height * 3 / 4;
 }
         
-void GameGrid::find_grid_dim() {
+void GameGrid::update_grid_dim() {
+    SDL_Rect viewport;
     SDL_RenderGetViewport(renderer_used, &viewport); // get window size
 
     // grid will fit within 3/4 of screen with set "margins"
@@ -206,7 +212,7 @@ GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows,
 
     // prepare state of game
     clear_grid_data();
-    find_grid_dim();
+    update_grid_dim();
 }
 
 GameGrid::~GameGrid() {};

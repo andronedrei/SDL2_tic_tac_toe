@@ -10,23 +10,26 @@ class GameWindow {
   private:
     int display_index;
     SDL_Window *window;
+    SDL_Rect viewport;
     SDL_Renderer *renderer;
-    SDL_Texture *texture;
-    SDL_DisplayMode display_mode; // used to collect data about display size
+    SDL_Texture *background;
 
   public:
     SDL_Renderer* get_renderer();
+    SDL_Window* get_window();
+  
     GameWindow();
-    // use before updating visual elements and render
+    // use before updating the rest of visual elements and render
     void prepare_render();
-    // use after updating visual elements and prepare_render
+    // use after updating the rest of visual elements and prepare_render
     void render();
+    // function that should be used when window was resized
+    void handle_resize();
     ~GameWindow();
 };
 
 class GameGrid {
   private:
-    SDL_Rect viewport;
     SDL_Rect grid_dim;
     SDL_Renderer* renderer_used; // pointer to the renderer used
 
@@ -50,14 +53,12 @@ class GameGrid {
     const int thickness = 2;
 
     int get_vertical_fit_ratio(int height);     
-    void find_grid_dim();
     void draw_cell(cell_pos pos, cell_state symbol_used);
     // function to draw a win line line that shows that a player had won
     void draw_win_line();
     void clear_grid_data();
 
   public:
-    void DEBUG_func();
     void set_cell_state(cell_pos pos, cell_state state);
     // function used to signify that a player had won (also gives coordonates for winner line)
     void set_winner(grid_line_data data);
@@ -69,6 +70,10 @@ class GameGrid {
         SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_win);
     ~GameGrid();
     void draw_grid();
+    // function that should be used each time after window was resized to update grid
+    void update_grid_dim();
+
+    void DEBUG_func();
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <cmath>
+#include <iostream>
 
 #include <custom/utils.h>
 
@@ -8,7 +9,7 @@ GameModifiers::GameModifiers() {
     nr_columns = 3;
     nr_win_line = 3; // must be smaller than minimum of previous 2
 
-    grid_color = {255, 255, 255, SDL_ALPHA_OPAQUE};
+    grid_color = {0, 0, 0, SDL_ALPHA_OPAQUE};
     color_X = {255, 0, 0, SDL_ALPHA_OPAQUE};
     color_0 = {0, 0, 255, SDL_ALPHA_OPAQUE};
     color_Z = {100, 100, 100, SDL_ALPHA_OPAQUE};
@@ -28,7 +29,7 @@ GameModifiers::GameModifiers() {
     symbol3 = CELL_Z;
     diff3 = HUMAN_DIFF;
 
-    small_delay = 25; // delay in ms
+    small_delay = 20; // delay in ms
     big_delay = 2000;
 }
 
@@ -108,4 +109,67 @@ void Render0(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness) {
             }
         }
     }
+}
+
+void RenderZ(SDL_Renderer *renderer, SDL_Rect dimensions, int thickness) {
+}
+
+// resizes a surface 
+SDL_Surface* ResizeSurface(SDL_Surface* original_surface, int window_width, int window_height) {
+    // make sure the new surface has the same format so information can be copied correctly
+    SDL_Surface* resized_surface = SDL_CreateRGBSurface(0, window_width, window_height,
+        original_surface->format->BitsPerPixel,
+        original_surface->format->Rmask,
+        original_surface->format->Gmask,
+        original_surface->format->Bmask,
+        original_surface->format->Amask
+    );
+    if (resized_surface == nullptr) {
+        std::cerr << "Could not create resized surface: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+
+    // create a rectangle for the destination area
+    SDL_Rect dstRect = {0, 0, window_width, window_height};
+
+    // copy the original surface to the resized surface, scaling it to fit
+    if (SDL_BlitScaled(original_surface, nullptr, resized_surface, &dstRect) != 0) {
+        std::cerr << "Could not scale surface: " << SDL_GetError() << std::endl;
+        SDL_FreeSurface(resized_surface);
+        return nullptr;
+    }
+
+    return resized_surface;
+}
+
+// function to creeate a new texture of desired size from surface (original surface is destroyed)
+SDL_Texture* CreateSizedTexture(SDL_Renderer *renderer, SDL_Surface* original_surface, int window_width, int window_height) {
+    original_surface = ResizeSurface(original_surface, window_width, window_height);
+    if (original_surface == nullptr) {
+        std::cerr <<  "Failed to create texture from surface" << std::endl;
+        return nullptr;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, original_surface);
+    if (texture == nullptr) {
+        std::cerr <<  "Failed to create texture from surface: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+
+    SDL_FreeSurface(original_surface); // free the original surface
+
+    return texture;
+}
+
+SDL_Texture* CreateSizedTextureFromBMP(SDL_Renderer *renderer, const char *image_file_name, int window_width, int window_height) {
+    SDL_Surface* aux_surface = SDL_LoadBMP(image_file_name);
+    if (aux_surface == nullptr) {
+        std::cerr << "Could not load image: " << SDL_GetError() << std::endl; 
+        return nullptr;
+    }
+
+    // prepare texture
+    SDL_Texture* texture = CreateSizedTexture(renderer, aux_surface, window_width, window_height);
+
+    return texture;
 }
