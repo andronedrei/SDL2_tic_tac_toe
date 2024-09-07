@@ -205,9 +205,9 @@ bool GameGrid::check_mouse_cell(cell_pos& pos) {
     return grid_data[pos.row][pos.column] == CELL_EMPTY ? true : false;
 }
 
-GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
+GameGrid::GameGrid(SDL_Renderer* renderer, int grd_nr_rows, int grd_nr_cols, 
     SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_Z, SDL_Color col_win)
-    : renderer_used(renderer), grid_nr_columns(grd_nr_cols), grid_nr_rows(grd_nr_rows),
+    : renderer_used(renderer), grid_nr_rows(grd_nr_rows), grid_nr_columns(grd_nr_cols),
     color_grid(col_grid), color_X(col_X), color_0(col_0), color_Z(col_Z), color_win(col_win) {
 
     // resize matrix with data

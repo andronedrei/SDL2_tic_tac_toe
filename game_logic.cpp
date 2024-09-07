@@ -70,166 +70,122 @@ void GameLogic::set_cell_state(cell_pos pos, cell_state state) {
     cur_pos.column = pos.column;
 }
 
-bool GameLogic::check_win_row(int row, int column) {
+bool GameLogic::check_group(cell_state target_state, cell_pos& start, int row_dir, int col_dir) {
+    cell_state cur_cell_state;
+    int cur_row;
+    int cur_col;
+
+    for (int i = 0; i < nr_win_line; i++) {
+        cur_row = start.row + i * row_dir;
+        cur_col = start.column + i * col_dir;
+        cur_cell_state = game_data[cur_row][cur_col];
+        if (cur_cell_state != target_state) {
+            // we should start from next cell now
+            start.row = cur_row + row_dir;
+            start.column = cur_col + col_dir;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool GameLogic::check_win_row(cell_pos pos) {
     // we verify all "nr_win_line" sized groups that contain current cell
     // we find first and last possible groups
-    int group_first_col = std::max(column - nr_win_line + 1, 0); // col of first member in first group
-    int next_first_col;
-    cell_state cur_state = game_data[row][column];
-    bool jump;
+    int group_first_col = std::max(pos.column - nr_win_line + 1, 0); // col of first member in first group
+    cell_pos group_first = {pos.row, group_first_col};
+    cell_state target_state = game_data[pos.row][pos.column];
 
-    if (cur_state == CELL_EMPTY) {
+    if (target_state == CELL_EMPTY) {
         return false;
     }
 
-    while (group_first_col + nr_win_line - 1 < nr_columns) { // we check that we are still in boundries
-        jump = false;
-        for (int i = 0; i < nr_win_line; i++) {
-            if (game_data[row][group_first_col + i] != cur_state)
-            {
-                next_first_col = group_first_col + i + 1; // we already know the column that doesn t match
-                jump = true;
-            }
-        }
-    
-        if (jump == false) { // win line
-            // we save row and column for win line endpoints
-            win_line_data.start_cell.row = row;
-            win_line_data.start_cell.column = group_first_col;
-            win_line_data.stop_cell.row = row;
-            win_line_data.stop_cell.column = group_first_col + nr_win_line - 1;
-       
+    // check bounds and go trough each group
+    while (group_first.column + nr_win_line - 1 < nr_columns) {
+        if (check_group(target_state, group_first, 0, 1) == true) {
+            win_line_data = {group_first, // start cell for win line
+                {group_first.row, group_first.column + nr_win_line - 1} // stop cell for win line
+            };
             return true;
-        } else {
-            group_first_col = next_first_col;
         }
     }
 
     return false;
 }
 
-bool GameLogic::check_win_column(int row, int column) {
+bool GameLogic::check_win_column(cell_pos pos) {
     // we verify all "nr_win_line" sized groups that contain current cell
     // we find first and last possible groups
-    int group_first_row = std::max(row - nr_win_line + 1, 0); // row of first member in first group
-    int next_first_row;
-    cell_state cur_state = game_data[row][column];
-    bool jump;
+    int group_first_row = std::max(pos.row - nr_win_line + 1, 0); // row of first member in first group
+    cell_pos group_first = {group_first_row, pos.column};
+    cell_state target_state = game_data[pos.row][pos.column];
 
-    if (cur_state == CELL_EMPTY) {
+    if (target_state == CELL_EMPTY) {
         return false;
     }
 
-    while (group_first_row + nr_win_line - 1 < nr_rows) { // we check that we are still in boundries
-        jump = false;
-        for (int i = 0; i < nr_win_line; i++) {
-            if (game_data[group_first_row + i][column] != cur_state)
-            {
-                next_first_row = group_first_row + i + 1; // we already know the column that doesn t match
-                jump = true;
-            }
-        }
-    
-        if (jump == false) { // win line
-            // we save row and column for win line endpoints
-            win_line_data.start_cell.row = group_first_row;
-            win_line_data.start_cell.column = column;    
-            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_cell.column = column;
+    // check bounds and go trough each group
+    while (group_first.row + nr_win_line - 1 < nr_rows) {
+        if (check_group(target_state, group_first, 1, 0) == true) {
+            win_line_data = {group_first, // start cell for win line
+                {group_first.row + nr_win_line - 1, group_first.column} // stop cell for win line
+            };
             return true;
-        } else {
-            group_first_row = next_first_row;
         }
     }
 
     return false;
 }
 
-bool GameLogic::check_win_diag1(int row, int column) {
+bool GameLogic::check_win_diag1(cell_pos pos) {
     // we verify all "nr_win_line" sized groups that contain current cell
     // we find first and last possible groups
-    int max_row_offset = row - std::max(row - nr_win_line + 1, 0);
-    int max_col_offset = column - std::max(column - nr_win_line + 1, 0);
+    int max_row_offset = pos.row - std::max(pos.row - nr_win_line + 1, 0);
+    int max_col_offset = pos.column - std::max(pos.column - nr_win_line + 1, 0);
     int offset = std::min(max_row_offset, max_col_offset);
     
-    int group_first_row, group_first_col;
-    int next_first_row, next_first_col;
-    cell_state cur_state = game_data[row][column];
-    bool jump;
+    int group_first_row = pos.row - offset;
+    int group_first_col = pos.column - offset;
+    cell_pos group_first = {group_first_row, group_first_col};
+    cell_state target_state = game_data[pos.row][pos.column];
 
-    if (cur_state == CELL_EMPTY) {
-        return false;
-    }
+    // check bounds and go trough each group
+    while (group_first.row + nr_win_line - 1 < nr_rows
+        && group_first.column + nr_win_line - 1 < nr_columns) {
 
-    group_first_row = row - offset;
-    group_first_col = column - offset;
-
-    while (group_first_row + nr_win_line - 1 < nr_rows && group_first_col + nr_win_line - 1 < nr_columns) {
-        jump = false;
-        for (int i = 0; i < nr_win_line; i++) {
-            if (game_data[group_first_row + i][group_first_col + i] != cur_state)
-            {
-                next_first_row = group_first_row + i + 1;
-                next_first_col = group_first_col + i + 1;
-                jump = true;
-            }
-        }
-    
-        if (jump == false) {
-            win_line_data.start_cell.row = group_first_row;
-            win_line_data.start_cell.column = group_first_col;    
-            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_cell.column = group_first_col + nr_win_line - 1;
+        if (check_group(target_state, group_first, 1, 1) == true) {
+            win_line_data = {group_first, // start cell for win line
+                {group_first.row + nr_win_line - 1, group_first.column + nr_win_line - 1}
+            };
             return true;
-        } else {
-            group_first_row = next_first_row;
-            group_first_col = next_first_col;
         }
     }
 
     return false;
 }
 
-bool GameLogic::check_win_diag2(int row, int column) {
+bool GameLogic::check_win_diag2(cell_pos pos) {
     // we verify all "nr_win_line" sized groups that contain current cell
     // we find first and last possible groups
-    int max_row_offset = row - std::max(row - nr_win_line + 1, 0);
-    // we start from top right corner so we adjust the computations
-    int max_col_offset = std::min(column + nr_win_line - 1, nr_columns) - column;
+    int max_row_offset = std::min(pos.row + nr_win_line - 1, nr_rows - 1) - pos.row;
+    int max_col_offset = pos.column - std::max(pos.column - nr_win_line + 1, 0);
     int offset = std::min(max_row_offset, max_col_offset);
     
-    int group_first_row, group_first_col;
-    int next_first_row, next_first_col;
-    cell_state cur_state = game_data[row][column];
-    bool jump;
+    int group_first_row = pos.row + offset;
+    int group_first_col = pos.column - offset;
+    cell_pos group_first = {group_first_row, group_first_col};
+    cell_state target_state = game_data[pos.row][pos.column];
 
-    if (cur_state == CELL_EMPTY) {
-        return false;
-    }
+    // check bounds and go trough each group
+    while (group_first.row - nr_win_line + 1 >= 0
+        && group_first.column + nr_win_line - 1 < nr_columns) {
 
-    group_first_row = row - offset;
-    group_first_col = column + offset;
-
-    while (group_first_row + nr_win_line - 1 < nr_rows && group_first_col - nr_win_line + 1 >= 0) {
-        jump = false;
-        for (int i = 0; i < nr_win_line; i++) {
-            if (game_data[group_first_row + i][group_first_col - i] != cur_state)
-            {
-                next_first_row = group_first_row + i + 1;
-                next_first_col = group_first_col - i - 1;
-                jump = true;
-            }
-        }
-    
-        if (jump == false) {
-            win_line_data.start_cell.row = group_first_row;
-            win_line_data.start_cell.column = group_first_col;    
-            win_line_data.stop_cell.row = group_first_row + nr_win_line - 1;
-            win_line_data.stop_cell.column = group_first_col - nr_win_line + 1;
+        if (check_group(target_state, group_first, -1, 1) == true) {
+            win_line_data = {group_first, // start cell for win line
+                {group_first.row - nr_win_line + 1, group_first.column + nr_win_line - 1}
+            };
             return true;
-        } else {
-            group_first_row = next_first_row;
-            group_first_col = next_first_col;
         }
     }
 
@@ -239,17 +195,21 @@ bool GameLogic::check_win_diag2(int row, int column) {
 bool GameLogic::check_win() {
     // DEBUG
     std::cout << "_____\nWIN COND DEBUG:\n";
-    std::cout << "ROW WIN: " << check_win_row(cur_pos.row, cur_pos.column)
-            << "| COL WIN: " << check_win_column(cur_pos.row, cur_pos.column) 
-            << "| DIAG1_WIN: " << check_win_diag1(cur_pos.row, cur_pos.column)
-            << "| DIAG2_WIN: " << check_win_diag2(cur_pos.row, cur_pos.column) << "\n";
-    //
+    std::cout << "ROW WIN: " << check_win_row(cur_pos)
+            << "| COL WIN: " << check_win_column(cur_pos) 
+            << "| DIAG1_WIN: " << check_win_diag1(cur_pos)
+            << "| DIAG2_WIN: " << check_win_diag2(cur_pos) << "\n";
+    
+
+    if (nr_win_line > std::min(nr_columns, nr_rows)) {
+        std::cerr << "Invalid game logic, nr cells necesary for win is too big\n"; 
+    }
 
     // check all possibilities of win
-    return check_win_row(cur_pos.row, cur_pos.column) 
-        || check_win_column(cur_pos.row, cur_pos.column)
-        || check_win_diag1(cur_pos.row, cur_pos.column)
-        || check_win_diag2(cur_pos.row, cur_pos.column);
+    return check_win_row(cur_pos) 
+        || check_win_column(cur_pos)
+        || check_win_diag1(cur_pos)
+        || check_win_diag2(cur_pos);
 }
 
 grid_line_data GameLogic::get_win_line_data() {
@@ -415,9 +375,9 @@ bool GameManager::decide_win_or_draw() {
     }
 
     // check if all cells have been used
-    if (game_logic->get_nr_used_cells() == 
+    if (game_logic->get_nr_used_cells() >= 
         game_logic->get_nr_rows() * game_logic->get_nr_columns()) {
-        
+        std::cout << "____\nDRAW\n";
         return true;
     }
 

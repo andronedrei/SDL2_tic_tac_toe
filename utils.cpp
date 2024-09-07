@@ -5,8 +5,8 @@
 #include <custom/utils.h>
 
 GameModifiers::GameModifiers() {
-    nr_rows = 3;
-    nr_columns = 3;
+    nr_rows = 4;
+    nr_columns = 4;
     nr_win_line = 3; // must be smaller than minimum of previous 2
 
     grid_color = {0, 0, 0, SDL_ALPHA_OPAQUE};
@@ -17,16 +17,16 @@ GameModifiers::GameModifiers() {
 
     nr_players = 2; // must be 2 or 3
 
-    type1 = ROBOT;
+    type1 = HUMAN;
     symbol1 = CELL_X; // must not be CELL_EMPTY and all different
-    diff1 = EASY; // diff of a potential robot player. For human player use "NOT_ROBOT"
+    diff1 = HUMAN_DIFF; // diff of a potential robot player. For human player use "NOT_ROBOT"
 
     type2 = HUMAN;
     symbol2 = CELL_Z;
     diff2 = HUMAN_DIFF;
 
     type3 = HUMAN;
-    symbol3 = CELL_Z;
+    symbol3 = CELL_0;
     diff3 = HUMAN_DIFF;
 
     small_delay = 20; // delay in ms

@@ -67,7 +67,7 @@ class GameGrid {
     // function to check whether mouse hovered over a valid cell (saves row and column)
     bool check_mouse_cell(cell_pos& pos);
 
-    GameGrid(SDL_Renderer* renderer, int grd_nr_cols, int grd_nr_rows, 
+    GameGrid(SDL_Renderer* renderer, int grd_nr_rows, int grd_nr_cols, 
       SDL_Color col_grid, SDL_Color col_X, SDL_Color col_0, SDL_Color col_Z, SDL_Color col_win);
     ~GameGrid();
     void draw_grid();

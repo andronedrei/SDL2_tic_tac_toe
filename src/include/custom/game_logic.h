@@ -19,10 +19,16 @@ class GameLogic {
     cell_pos cur_pos; // curent row and column where a cell was modified
     grid_line_data win_line_data;
 
-    bool check_win_row(int row, int column);
-    bool check_win_column(int row, int column);
-    bool check_win_diag1(int row, int column);
-    bool check_win_diag2(int row, int column);
+    // function to check if a group of nr_win_line contains only one symbol
+    // a row_dir of 0 means group is the same row (analog for row dir)
+    // a row dir of -1 or 1 means going to next or previous row in grid
+    // for going diagonally pick both row_dir and col_dir to be 1 (or -1 for bacwards diag)
+    // in case group is a mismatch, next group start cell for check is saved in start
+    bool check_group(cell_state target_state, cell_pos& start, int row_dir, int col_dir);
+    bool check_win_row(cell_pos pos);
+    bool check_win_column(cell_pos pos);
+    bool check_win_diag1(cell_pos pos);
+    bool check_win_diag2(cell_pos pos);
   public:
     // getters and setters
     cell_state get_cell_state(cell_pos pos);
