@@ -5,9 +5,9 @@
 #include <custom/utils.h>
 
 GameModifiers::GameModifiers() {
-    nr_rows = 4;
-    nr_columns = 4;
-    nr_win_line = 3; // must be smaller than minimum of previous 2
+    nr_rows = 10;
+    nr_columns = 6;
+    nr_win_line = 5; // must be smaller than minimum of previous 2
 
     grid_color = {0, 0, 0, SDL_ALPHA_OPAQUE};
     color_X = {255, 0, 0, SDL_ALPHA_OPAQUE};
