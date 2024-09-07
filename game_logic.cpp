@@ -71,6 +71,20 @@ void GameLogic::set_cell_state(cell_pos pos, cell_state state) {
     cur_pos.column = pos.column;
 }
 
+std::vector<cell_pos> GameLogic::get_available_cells() {
+    std::vector<cell_pos> available_cells;
+
+    for (int i = 0; i < nr_rows; i++) {
+        for (int j = 0; j < nr_columns; j++) {
+            if (get_cell_state({i, j}) == CELL_EMPTY) {
+                available_cells.push_back({i, j});
+            }
+        }
+    }
+
+    return available_cells;
+}
+
 bool GameLogic::check_group(cell_state target_state, cell_pos& start, int row_dir, int col_dir) {
     cell_state cur_cell_state;
     int cur_row;
@@ -232,9 +246,11 @@ void GameManager::add_player(player_type type, cell_state symbol, robot_difficul
         return;
     }
 
+    symbols_order.push_back(symbol);
+
     switch (type) {
         case HUMAN: players.push_back(new Human(symbol, game_logic, game_grid)); break;
-        case ROBOT: players.push_back(new Robot(symbol, game_logic, game_grid, diff)); break;
+        case ROBOT: players.push_back(new Robot(symbol, game_logic, game_grid, diff, symbols_order)); break;
         default: break;
     }
 
@@ -273,8 +289,8 @@ GameManager::~GameManager() {
     delete game_grid;
     delete game_window;
 
-    for (Player* player : players) {
-        delete player;
+    for (Player* player_p : players) {
+        delete player_p;
     }
 }
 

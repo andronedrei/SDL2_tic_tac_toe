@@ -30,6 +30,7 @@ class GameLogic {
     bool check_win_column(cell_pos pos);
     bool check_win_diag1(cell_pos pos);
     bool check_win_diag2(cell_pos pos);
+
   public:
     // getters and setters
     cell_state get_cell_state(cell_pos pos);
@@ -37,6 +38,8 @@ class GameLogic {
     int get_nr_columns();
     int get_nr_used_cells();
     void set_cell_state(cell_pos pos, cell_state state);
+    // function to get cells with cell empty state
+    std::vector<cell_pos> get_available_cells();
 
     // check if last move conducted to a win 
     bool check_win();
@@ -57,6 +60,7 @@ class GameManager {
     GameLogic* game_logic;
     GameGrid* game_grid;
     std::vector<Player*> players; // nr of players should be 2 or 3
+    std::vector<cell_state> symbols_order; // robot players are given references to this
 
     SDL_Event event;
     int nr_players;

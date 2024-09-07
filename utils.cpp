@@ -5,9 +5,9 @@
 #include <custom/utils.h>
 
 GameModifiers::GameModifiers() {
-    nr_rows = 10;
-    nr_columns = 6;
-    nr_win_line = 5; // must be smaller than minimum of previous 2
+    nr_rows = 3;
+    nr_columns = 3;
+    nr_win_line = 3; // must be smaller than minimum of previous 2
 
     grid_color = {0, 0, 0, SDL_ALPHA_OPAQUE};
     color_X = {255, 0, 0, SDL_ALPHA_OPAQUE};
@@ -21,12 +21,12 @@ GameModifiers::GameModifiers() {
     symbol1 = CELL_X; // must not be CELL_EMPTY and all different
     diff1 = HUMAN_DIFF; // diff of a potential robot player. For human player use "NOT_ROBOT"
 
-    type2 = HUMAN;
-    symbol2 = CELL_Z;
-    diff2 = HUMAN_DIFF;
+    type2 = ROBOT;
+    symbol2 = CELL_0;
+    diff2 = HARD;
 
     type3 = HUMAN;
-    symbol3 = CELL_0;
+    symbol3 = CELL_Z;
     diff3 = HUMAN_DIFF;
 
     small_delay = 20; // delay in ms
